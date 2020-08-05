@@ -1,0 +1,109 @@
+{% from 'function.twig' import add,mi_add,login,auto,slug,time,description,paging %}
+{% from 'func.twig' import mi_get,mi_up,k_del,get,html_decode,d_get %}
+{% from 'comment.twig' import comment,list_comment %}
+
+{% use 'giaodien.twig' %}
+{% use 'home.twig' %}
+{% set uri=get_uri_segments () %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+
+
+{% set id=uri[1]|split('-')|first %}
+{% if get('blog_'~id,'title') %}
+{% set author = get('blog_'~id,'author') %}
+{% set author = slug(author) %}
+{% set title = get('blog_'~id,'title') %}
+{% set slug = get('blog_'~id,'slug') %}
+{% set time = get('blog_'~id,'time')|trim %}
+{% set html = get('blog_'~id,'html')|trim %}
+{% set view = get('blog_'~id,'view')|trim %}
+{% set chaplist = get('blog_'~id,'chaplist')|trim %}
+{% set content = get('blog_'~id,'content','raw') %}
+
+{% set category = get('blog_'~id,'category') %}
+{% set comment = get('blog_'~id,'comment') %}
+
+{% set nameid = get('category_'~category,'ten') %}
+{% set go = mi_add('blog_'~id,{"view":(view+1)}) %}
+{% set go = add('top_view','blog_'~id,(view+1)) %}
+{% set mota = description(content) %}
+{% set description = html_decode(mota)|striptags|slice(0,200) %}
+{{block('header')}}
+
+<div class="phdr"><span itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemscope="itemscope"><a itemprop="url" href="/"><span itemprop="title"><i class="fa fa-home" aria-hidden="true"></i> Trang chủ</span></a></span> » <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemscope="itemscope"><a itemprop="url" href="/category/{{category}}-{{slug(nameid)}}/"><span itemprop="title">{{nameid}}</span></a></span></div>
+<style>.video-wrapper{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}.video-wrapper iframe{position:absolute;top:0;left:0;width:100%;height:100%}</style> 
+<div class="phdr" style="font-weight:bold;"><i class="fa fa-spinner fa-pulse fa-fw"></i> {{title}}</div>
+
+<style>
+.blog_info{border-bottom:1px solid #a8d9f6}.blog_info .thumb_blog img{border-radius:5px}.blog_info{background-color:#fcfcfc;padding-top:5px;padding-bottom:6px}.blog_info .thumb_blog{float:left;margin:2px 5px 5px}.blog_info .more_info{margin-left:51px}.blog_info .more_info .row{display:block;font-weight:700;padding-bottom:3px}.blog_info .more_info .row.more{font-size:10.5px;color:gray}
+</style>
+
+<div class="blog_info"><div class="thumb_blog"><img src="https://images.weserv.nl/?url={{get('user_'~author,'avatar')}}&w=120&h=120&mask=circle" alt="Avatar" width="60px" height="60px"></div>
+<div class="more_info"><span class="row tit"><i class="fa fa-user"></i> <font color="red">{{get('user_'~author,'nick')}}</font></span>
+<span class="row more"><i class="fa fa-clock-o"></i> {{time(time)}}</span>
+<span class="row more">
+<i class="fa fa-eye" aria-hidden="true"></i>  {{view}} 
+</span></div></div>
+
+{% if login and (level=='admin' or level=='mod') %}
+<div class="menu">
+<b><i class="fa fa-wrench" aria-hidden="true"></i> Công cụ:</b> 
+&emsp;&emsp;<a href="/manager/edit/{{id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Chỉnh sửa</a> / <a href="/manager/delete/{{id}}"><i class="fa fa-trash-o" aria-hidden="true"></i> Xoá</a> 
+</div>
+{%endif %}
+
+<div class="menu" style="text-align: justify;font-style: normal;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;-o-user-select:none;user-select:none">{{content}}</div>
+
+{# chaplist #}
+{% if chaplist=='1' %}
+<div class="phdr"><b><i class="fa fa-clone" aria-hidden="true"></i> Danh sách chương</b>{% if login %}<a data-no-instant href="/manager/add-chap/{{id}}" style="float:right" title="Viết"><input type="submit" name="submit" value="Thêm" /></a>{%endif %}</div>
+{% set datachap = mi_get('show_post_'~id)|split(' @ ')|reverse  %}
+{% set per = '10' %}
+{% set total=datachap|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=url[2]|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% for i in datachap|slice(0,total)|reverse|slice(st,per) %}
+{% set entries='' %}{% for entry in get_data('chap_'~i) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set chap=entries|json_decode %}
+{% set tenchap = chap.title %}
+{% set idchap = chap['id'] %}
+{% set slugchap = chap['slug'] %}
+<div class="list1"><a href="/view-chap/{{idchap}}-{{slugchap}}/"> {{tenchap}}</a></div>
+{% endfor %}
+{% endif %}
+{{paging('view/'~id~'-'~slug~'/',p,page_max)}}
+{# end chaplist #}
+
+<div class="menu"><b><i class="fa fa-tags" aria-hidden="true"></i>Từ khoá :</b> {% for i in title|split(' ') %}<a href="/search?query={{i}}">{{i}}</a>, {% endfor %}
+</div>
+
+{% if comment=='1' %}
+{# form comment#}
+{{comment(id)}}
+{% else %}
+
+<div class="phdr"><b><i class="fa fa-comments-o" aria-hidden="true"></i> Bình luận tạm khoá</b></div>
+
+{% endif %}
+{#list comment#}
+{{list_comment(id)}}
+
+{% else %}
+{% set title ='Lỗi' %}
+{{block('header')}}
+<div class="list-group-item">Bài viết không tồn tại</div>
+{% endif %}
+{{block('footer')}}

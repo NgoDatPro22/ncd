@@ -1,0 +1,25 @@
+{% from 'function.twig' import id,mi_add,slug,add,login %}
+{% from 'func.twig' import mi_up,d_get %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and level=='admin' %}
+
+
+<div class="phdr"><b><i class="fa fa-bars"></i> Tạo thư mục</b> (Tối đa 50 kí tự)</div>
+{% set text,content,key = get_post('text')|striptags|slice(0,200)|trim,get_post('content'),get_post('key') %}
+{% set slug=slug(text)|trim %}
+{% if text and content and key %}
+{% if text|length > 50 or text|length < 1 %}
+<div class="rmenu">Lỗi rồi</div>
+{% else %}
+{% set id = id('category') %}
+{% set data = {"ten":text,"slug":slug,"id":(id|trim),"content":content,"key":key} %}
+{{mi_up('list_category',id)}}
+{% set go = mi_add('category_'~id,data) %}
+<div class="gmenu">Thư mục được tạo thành công.</a></div>
+{% endif %}
+{% endif %}
+<div class="menu"><form action="" method="post"><input type="text" name="text" value="" maxlength="50"><br/>Mô tả : <textarea name="content"></textarea>Từ khoá: 
+<textarea name="key"></textarea><button type="submit" class="btn btn-primary btn-block">Tạo</button></form></div>
+{% endif %}

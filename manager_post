@@ -1,0 +1,99 @@
+{% from 'function.twig' import add,mi_add,slug,id,login %}
+{% from 'func.twig' import mi_get,mi_up,get,d_get %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and (level=='admin' or level=='mod') %}
+
+<div class="phdr"><b><i class="fa fa-pencil" aria-hidden="true"></i> Đăng bài viết</b></div>
+{% set data1 = mi_get('show_blog')|split(' @ ')|last %}
+{% set slug1 = get('blog_'~data1,'slug') %}
+{% set ten = get_post('ten')|striptags|slice(0,300)|trim %}
+{% set idcm = get_post('category')|trim %}
+{% set content = get_post('content') %}
+{% set thumb = get_post('thumb') %}
+{% set category = mi_get('list_category')|split(' @ ') %}
+{% set html = get_get('editor') %}
+{% set comment = get_post('comment') %}
+{% set chaplist = get_post('chaplist') %}
+{% if ten and content and idcm %}
+{% set slug=slug(ten)|default('post')|trim %}
+{% set id = get('ID','blog')|trim+1 %}
+
+{% set data={'title':ten|slice(0,300),'slug':slug,'content':content,'time':'now'|date('U', 'Asia/Ho_Chi_Minh'),'category':idcm,'id':id,'thumb':thumb|default(''),'view':1,'author':login|default('admin'),'comment':comment|default(0),'chaplist':chaplist|default(0)} %}
+{% if slug1 == slug %}
+Bài viết bị trùng
+{% else %}
+{% if mi_add('blog_'~id,(data)) %}
+{{mi_up('show_blog',id)}}
+
+{{mi_up('show_category_'~idcm,id)}}
+{{mi_add('ID',{"blog":(id)})}}
+<div class="gmenu">Đăng bài viết thành công</div>
+{% endif %}
+{% endif %}
+{% endif %}
+
+
+<style>.button{background-color:#e7e7e7;border:none;color:#000;padding:15px 32px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer}</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/pasteembed/trumbowyg.pasteembed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/cleanpaste/trumbowyg.cleanpaste.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/upload/trumbowyg.upload.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/colors/trumbowyg.colors.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/ui/trumbowyg.min.css" />
+
+<form action="" method="post">
+<div class="menu"><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề:</b> <input type="text" name="ten" value="" maxlength="300" style="height:100%; width:100%"></div>
+<div class="menu"><b><i class="fa fa-bars"></i> Chuyên mục:</b> 
+    <select name="category">  
+    	{% for i in category|reverse %}{% if loop.last==false %}
+            <option value="{{get('category_'~i,'id')}}">{{get('category_'~i,'ten')}}</option>{% endif %}
+	{% endfor %}
+    </select>
+</div>
+<div class="menu"><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <textarea id="trumbowyg" name="content" rows="25"></textarea></div>
+<div class="menu"><input type="checkbox" name="comment" value="1" checked> Cho phép bình luận</div>
+<div class="menu"><input type="checkbox" name="chaplist" value="1">  Sử dụng danh sách chương</div>
+<div class="menu"><center><button type="submit" class="button">Đăng bài</button></form></center></div>
+<script>
+$('#trumbowyg').trumbowyg({
+{#autogrowOnEnter: true,#}
+    btnsDef: {
+        // Create a new dropdown
+        image: {
+            dropdown: ['insertImage', 'upload'],
+            ico: 'insertImage'
+        }
+    },
+    btns: [
+        ['undo', 'redo'],
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['foreColor', 'backColor'],
+        ['link'],
+        ['image'],
+        ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+        ['viewHTML']
+
+
+    ],
+    plugins: {
+        // Add imagur parameters to upload plugin for demo purposes
+        upload: {
+            serverPath: 'https://api.imgur.com/3/image',
+            fileFieldName: 'image',
+            headers: {
+                'Authorization': 'Client-ID 21ca8b31c6adc09'
+            },
+            urlPropertyName: 'data.link'
+        }
+    }
+});
+       
+</script>
+
+
+{% endif %}

@@ -1,0 +1,46 @@
+{% from 'function.twig' import get,add,mi_add,slug,id,login %}
+{% from 'func.twig' import mi_get,mi_up,mi_del,k_del,d_get %}
+{% set url=get_uri_segments() %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and level=='admin' %}
+<div class="phdr"><i class="fa fa-trash-o" aria-hidden="true"></i> Xoá bài viết</div>
+{% set entries='' %}{% for entry in get_data('blog_'~url[2]) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% set tencu = post['title'] %}
+{% set slugcu = post['slug'] %}
+{% set ndcu = post['content'] %}
+{% set id = post['id'] %}
+{% set cmcu = post['category'] %}
+{% set chaplist = post['chaplist'] %}
+{% if post %}
+{% set delete = get_post('delete') %}
+{% if delete == '1' %}
+{{mi_del('show_blog',id)}}
+
+{{mi_del('show_category_'~cmcu,id)}}
+{{k_del('blog_'~id)}}
+{{k_del('comment_'~id)}}
+
+{% set datachap = mi_get('show_post_'~id)|split(' @ ')|reverse  %}
+{% for i in datachap %}
+{{k_del('chap_'~i)}}
+{% endfor %}
+
+{{k_del('show_post_'~id)}}
+{{k_del('show_post_'~id~'-1')}}
+
+<div class="gmenu">Xoá thành công</div>
+<script>window.location.href='/'</script>
+{% endif %}
+<div class="list1">Bạn có muốn xoá bài viết: <a href="/view/{{id}}">{{tencu}}</a><br/>
+
+{% if chaplist== '1' %}
+<b>Các chap trong bài viết cũng sẽ bị xóa</b>
+{% endif %}
+<form action="" method="post"><input type="hidden" name="delete" value="1"><button type="submit" class="btn btn-primary btn-block">Xóa nhận</button></form></div>
+{% else %}
+<div class="list-group-item">Bài viết không tồn tại</div>
+{% endif %}
+{% endif %}

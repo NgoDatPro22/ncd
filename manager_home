@@ -1,0 +1,13 @@
+<div class="phdr"><b><i class="fa fa-tachometer" aria-hidden="true"></i> Quản trị</b></div>
+<div class="list1">
+   <a href="/manager/post"><i class="fa fa-cog" aria-hidden="true"></i> Viết bài mới</a>
+</div>
+<div class="list1">
+   <a href="/manager/created-category"><i class="fa fa-cog" aria-hidden="true"></i> Tạo thư mục</a>
+</div>
+<div class="list1">
+   <a href="/manager/list"><i class="fa fa-cog" aria-hidden="true"></i> Danh sách bài viết</a>
+</div>
+<div class="list1">
+   <a href="/manager/category-sort"><i class="fa fa-cog" aria-hidden="true"></i> Sắp xếp chuyên mục</a>
+</div>

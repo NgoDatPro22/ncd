@@ -1,0 +1,102 @@
+{% from 'function.twig' import add,mi_add,login,auto,slug,time,description %}
+{% from 'func.twig' import mi_get,mi_up,k_del,get,html_decode,d_get %}
+
+
+{% use 'giaodien.twig' %}
+{% use 'home.twig' %}
+{% set uri=get_uri_segments () %}
+{% set login = login()|trim %}
+{% set id=uri[1]|split('-')|first %}
+{% if get('chap_'~id,'title') %}
+{% set author = get('chap_'~id,'author') %}
+{% set title = get('chap_'~id,'title') %}
+{% set time = get('chap_'~id,'time')|trim %}
+{% set html = get('chap_'~id,'html')|trim %}
+{% set view = get('chap_'~id,'view')|trim %}
+{% set content = get('chap_'~id,'content','raw') %}
+
+
+{#Từ bài viết chính #}
+{% set box = get('chap_'~id,'box') %}
+{% set titlebox = get('blog_'~box,'title') %}
+{% set slugbox = get('blog_'~box,'slug') %}
+{% set categorybox = get('blog_'~box,'category') %}
+{% set nameidbox = get('category_'~categorybox,'ten') %}
+{#Từ bài viết chính #}
+
+{% set go = mi_add('chap_'~id,{"view":(view+1)}) %}
+{% set go = add('top_view','chap_'~id,(view+1)) %}
+{% set mota = description(content) %}
+{% set description = html_decode(mota)|striptags|slice(0,200) %}
+{{block('header')}}
+
+<div class="phdr">
+<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemscope="itemscope"><a itemprop="url" href="/"><span itemprop="title"><i class="fa fa-home" aria-hidden="true"></i> Trang chủ</span></a></span> » <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemscope="itemscope"><a itemprop="url" href="/category/{{categorybox}}-{{slug(nameidbox)}}/"><span itemprop="title">{{nameidbox}}</span></a></span> » <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemscope="itemscope"><a itemprop="url" href="/view/{{box}}-{{slugbox}}/"><span itemprop="title">{{titlebox}}</span></a></span>
+</div>
+
+<style>.video-wrapper{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}.video-wrapper iframe{position:absolute;top:0;left:0;width:100%;height:100%}</style> 
+<div class="phdr" style="font-weight:bold;"><i class="fa fa-spinner fa-pulse fa-fw"></i> {{title}}</div>
+
+
+<style>
+.blog_info{border-bottom:1px solid #a8d9f6}.blog_info .thumb_blog img{border-radius:5px}.blog_info{background-color:#fcfcfc;padding-top:5px;padding-bottom:6px}.blog_info .thumb_blog{float:left;margin:2px 5px 5px}.blog_info .more_info{margin-left:51px}.blog_info .more_info .row{display:block;font-weight:700;padding-bottom:3px}.blog_info .more_info .row.more{font-size:10.5px;color:gray}
+</style>
+
+<div class="blog_info"><div class="thumb_blog"><img src="https://images.weserv.nl/?url={{get('user','avatar')}}&w=120&h=120&mask=circle" alt="Avatar" width="60px" height="60px"></div>
+<div class="more_info"><span class="row tit"><i class="fa fa-user"></i> <font color="red">{{ get('user','user') }}</font></span>
+<span class="row more"><i class="fa fa-clock-o"></i> {{time(time)}}</span>
+<span class="row more">
+<i class="fa fa-eye" aria-hidden="true"></i>  {{view}} 
+</span></div></div>
+
+{% if login and (level=='admin' or level=='mod') %}
+<div class="menu">
+<b><i class="fa fa-wrench" aria-hidden="true"></i> Công cụ:</b> 
+&emsp;&emsp;<a href="/manager/edit-chap/{{id}}/"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Chỉnh sửa chap</a> / <a href="/manager/delete-chap/{{id}}"><i class="fa fa-trash-o" aria-hidden="true"></i> Xoá chap</a> / <a href="/manager/add-chap/{{box}}"><i class="fa fa-clone" aria-hidden="true"></i> Thêm chap</a>
+</div>
+{%endif %}
+
+<div class="menu" style="text-align: justify;font-style: normal;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;-o-user-select:none;user-select:none">{{content}}</div>
+
+
+{# prev next chap #}
+{% set datachap = mi_get('show_post_'~box)|split(' @ ') %}
+
+{% set kk=id %}
+<div style="text-align: center;" class="topmenu"> <div class="pagination">
+{% for i,value in datachap %}
+{% set j = datachap[i] %}
+
+{% set entries='' %}{% for entry in get_data('chap_'~j) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set chap=entries|json_decode %}
+
+{% set tenchap = chap.title %}
+{% set idchap = chap['id'] %}
+{% set slugchap = chap['slug'] %}
+{% if i != 0 %}
+
+{% if datachap[i+1]  == (id+0) %}
+<a class="pagenav" href="/view-chap/{{idchap}}-{{slugchap}}/">←</a>
+{% endif %}
+{% if datachap[i]  == (id+0) %}
+<a class="pagenav" href="#">↑</a>
+{% endif %}
+{% if datachap[i-1] == (id+0) %}
+<a class="pagenav" href="/view-chap/{{idchap}}-{{slugchap}}/">→</a>
+{% endif %}
+
+{%endif%}
+
+{% endfor %}
+</div></div>
+{# end  prev next chap #}
+
+
+<div class="menu"><b><i class="fa fa-tags" aria-hidden="true"></i>Từ khoá :</b> {% for i in title|split(' ') %}<a href="/search?query={{i}}">{{i}}</a>, {% endfor %}
+</div>
+{% else %}
+{% set title ='Lỗi' %}
+{{block('header')}}
+<div class="list-group-item">Bài viết không tồn tại</div>
+{% endif %}
+{{block('footer')}}

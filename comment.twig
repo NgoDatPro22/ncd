@@ -1,0 +1,66 @@
+{% macro comment(key) %}
+{% from 'function.twig' import get,add,auto,login,mi_add %}
+{% from 'func.twig' import k_del %}
+{% set login = login()|trim %}
+{% set entries='' %}{% for entry in get_data('blog_'~key) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% set form_captcha %}<div class="menu"><center><form method="post" action="#cmt">{{ captcha()|raw }}<br/><button type="submit" class="btn btn-primary btn-block">Xác nhận</button></form></center></div>{% endset %}
+{% set form %}<div class="list1"><b>Tên:</b><br/><form action="#cmt" method="post"><input type="text" name="ten" value="{% if login %}{{login}}{% else %}{{get_cookie('name')}}{% endif %}" maxlength="30"></div>
+<div class="list1"><b>Nội dung:</b> <textarea name="content"></textarea></div>
+<div class="menu"><center><button type="submit" class="btn btn-primary btn-block">Bình luận</button></form></center></div>
+</div>{% endset %}
+
+
+<div class="phdr" id="cmt"><b><i class="fa fa-comments-o" aria-hidden="true"></i> Bình luận</b></div>
+{% set auto = get_cookie('auto')|trim %}
+{% set checkauto = get('list_user_comment',ip()) %}
+{% if auto|length>'3' and auto == checkauto %}
+{% set name = get_post('ten') %}
+{% set content = get_post('content') %}
+{% if name|length>'1' and content|length>'5' %}
+{% set data_comment={"name":name|default('guest'),"comment":content,"ip":ip(),"time":now|date('U'),"level":login|default('guestCA'),"id":key} %}
+{% set time = 'now'|date('U') %}
+{% set go=add('comment_'~key,data_comment|json_encode,'now'|date('U')) %}
+{% set go=add('comment','C'~time,'comment_'~key) %}
+{% set go=mi_add('blog_'~key,{"comment_num":(post['comment_num']+1)})%}
+{{set_cookie('name',name)}}
+{% endif %}
+
+{{ form }}
+
+{% else %}
+{% if request_method()|lower == "post" %}
+{% set random = auto()|trim %}
+  {% set comment = {"ip":ip(),"auto":random} %}
+  {% set status = save_data_captcha ( "comments_captcha", comment|json_encode ) %}
+{% set ip = get('comments_captcha','ip')|trim %}
+{% set auto = get('comments_captcha','auto')|trim %}
+{% if ip and auto %}
+{% set go = add('list_user_comment',ip,auto) %}
+{{set_cookie('auto',auto)}}
+{% set go = k_del('comments_captcha') %}
+<div class="gmenu">Xác minh thành công</div>
+{{ form }}
+{% endif %}
+  {% if status == 'CAPTCHA_ERR' %}
+    <div class="list1"><p style="color:red">Please enter CAPTCHA</p></div>
+{{ form_captcha }}
+  {% endif %}
+{% else %}
+{{ form_captcha }}
+{% endif %}
+
+{% endif %}
+{% endmacro %}
+{% macro list_comment(key) %}
+{% set data_comment=get_data('comment_'~key)|last.data|json_decode %} 
+      {% if data_comment %}	
+      {% for k,v in data_comment|reverse|slice(0,10)  %}
+         {% set cmt=k|json_decode %}
+         <div class="list1"><b>❖ {% if cmt['level'] != 'guestCA' %}<font color="red">{{cmt['name']}}</font>{% else %}{{cmt['name']}}{% endif %}</b>: {{cmt['comment']}}</div>
+      {% endfor %}
+      {% else %}
+        <div class="list1">Chưa có bình luận nào!</div>
+      {% endif %}
+{% endmacro %}
+

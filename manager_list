@@ -1,0 +1,62 @@
+{% from 'function.twig' import get,time,slug,login,paging %}
+{% from 'func.twig' import mi_get,d_get %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and level=='admin'  %}
+
+
+<div class="phdr"><b><i class="fa fa-book" aria-hidden="true"></i> Danh sách bài viết</b></div>
+
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set per = '10' %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=url[2]|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+<div class="list1">Chưa có bài viết nào</div>
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set entries='' %}{% for entry in get_data('blog_'~i) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% set name = post.title %}
+{% set id = post['id']|trim %}
+{% set category = post['category'] %}
+{% set slug = post['slug'] %}
+{% set cat = get('category_'~category,'ten') %}
+{% set time = post['time'] %}
+{% set view = post['view'] %}
+{% set cmt = post['comment_num'] %}
+
+
+
+
+
+<div class="list1">
+<table cellpadding="0" cellspacing="0" width="100%"><tr><td>
+<span class="topic cat_{{ random (['red','blue','green','orange'])}}"><i class="fa fa-{{ random (['rocket','plane','bicycle','subway','train','motorcycle','bus','car'])}}"></i> {{cat}}</span>
+ <a href="/view/{{id}}-{{slug}}/"> {{name}}</a>
+<div class="sub">
+<small><i class="fa fa-eye" aria-hidden="true"></i> {{view}} / <i class="fa fa-clock-o"></i> {{time(time)}}</small>
+</div>
+</td><td align="right"><b><a href="/manager/edit/{{id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> / <a href="/manager/delete/{{id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a></b></td></tr>
+</table>
+</div>
+
+
+
+{% endfor %}
+{% endif %}
+{{paging('manager/list/',p,page_max)}}
+{% endif %}

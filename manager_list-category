@@ -1,0 +1,26 @@
+{% from 'function.twig' import get,login %}
+{% from 'func.twig' import mi_get,d_get %}
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and level=='admin'  %}
+
+<div class="phdr"><b><i class="fa fa-bars"></i> Danh sách chuyên mục</b></div>
+{% if data|length > 3 %}
+
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+
+{% if loop.last==false %}
+<div class="list1"><i class="fa fa-cube" aria-hidden="true"></i> {{cmm}}</div>
+
+
+{% endif %}
+{% endfor %}
+
+{% else %}
+<div class="list1">Chưa có chuyên mục nào</div>
+{% endif %}
+{% endif %}

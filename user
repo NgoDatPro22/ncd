@@ -1,0 +1,60 @@
+{% use 'giaodien.twig' %}
+
+{% from 'func.twig' import d_get %}
+{% from 'function.twig' import slug,auto,login,time %}
+
+{% if login() %}
+{% set login=login()|trim %}
+{% endif %}
+{% set url=get_uri_segments() %}
+{% if url[2] == 'info' and login %}
+{% set title = 'Cập nhật hồ sơ' %}
+{% else %}
+{% set title = 'Trang cá nhân' %}
+{% endif %}
+ {{ block( 'header' ) }}
+{% if not url[1] and not login or url[1] and get_data_count('user_'~slug(url[1])) == 0 %}
+<div class="menu">Tài khoản này không tồn tại.</div>
+{% else %}
+{% if login and not url[1] %}
+{% set user='user_'~login %}
+ {% set tk=login %}
+{% else %}
+{% set user='user_'~slug(url[1]) %}
+ {% set tk=slug(url[1]) %}
+{% endif %}
+
+{% if login == tk and url[2] == 'info' %}
+{% include 'info' %}
+{% else %}
+<style>.list1:hover:hover{border-left:4px solid #25B37A}</style>
+<div class="phdr"><i class="fa fa-user-circle" aria-hidden="true"></i> Trang cá nhân {{d_get(user,'nick')}}</div>
+<div style="background:#E8FFFE;border:solid #e9e9e9;border-width:0 1px 1px;padding:5px;word-wrap:break-word;text-align: center;">
+<img src="https://images.weserv.nl/?url={{d_get(user,'avatar')}}&w=120&h=120&t=square&mask=circle" width="120" height="120" /></br><a href="/user/{{tk}}"><b>{{d_get(user,'nick')}}</b></a>
+</br>
+
+{% if login == tk %}
+
+<a href="/user/{{tk}}/info"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+{% elseif login and login != tk %}
+<a href="/mail/{{tk}}"><i class="fa fa-envelope" aria-hidden="true"></i></a>
+ 
+{% endif %}
+</div>
+</div>
+<div class="list1">
+<i class="fa fa-id-card" aria-hidden="true"></i> ID: {{d_get(user,'id')}}
+</div>
+<div class="list1">
+<i class="fa fa-venus-mars" aria-hidden="true"></i> Giới tính: {% if d_get(user,'gt') == 'boy' %}<i class="fa fa-mars" aria-hidden="true"></i>{% else %}<i class="fa fa-venus" aria-hidden="true"></i>{% endif %}
+</div>
+{% if login == tk %}
+<div class="list1">
+<i class="fa fa-user-plus" aria-hidden="true"></i> Đăng kí lúc: {{time(d_get(user,'reg')|trim)}}
+</div>
+{% endif %}
+
+
+{% endif %}
+{% endif %}
+{{block('footer')}}

@@ -1,0 +1,97 @@
+{% from 'func.twig' import d_get,d_add %}
+{% set avatar = get_post('avatar') %}
+{% set sex = get_post('sex') %}
+{% set pass = get_post('pass') %}
+{% set newpass = get_post('newpass') %}
+{% set repass = get_post('repass') %}
+
+
+{% set mk = d_get(user,'pass') %}
+{% set avt = d_get(user,'avatar') %}
+{% set gt = d_get(user,'gt') %}
+{% set nick = d_get(user,'nick') %}
+{% set nck = get_post('nick') %}
+
+
+
+<div class="phdr"><i class="fa fa-user-circle" aria-hidden="true"></i> Cập nhật hồ sơ</div>
+{% if request_method()|lower == 'post' %}
+{% if avatar and avatar != avt or sex and sex != gt or pass == mk and newpass == repass and repass != mk or nck != nick or cbox != cb or gdd != gd%}
+<div class="menu">Cập nhật thành công</div>
+{% endif %}
+{% if nck %}
+{% if nck != nick %}
+{{d_add(user,'nick',nck)}}
+{% endif %}
+{% endif %}
+{% if pass and newpass and repass %}
+ {% if pass != mk %}
+<div class="rmenu">Mật khẩu cũ sai</div>
+{% elseif newpass != repass %}
+<div class="rmenu">Mật khẩu mới và mật khẩu nhập lại không khớp</div>
+{% else %}
+{% if repass != mk %}
+{{d_add(user,'pass',repass)}}
+{% endif %}
+{% endif %}
+{% elseif pass or newpass or repass %}
+<div class="rmenu">Vui lòng điền đầy đủ thông tin mật khẩu</div>
+{% endif %}
+{% if avatar %}
+{% if avatar != avt %}
+{{d_add(user,'avatar',avatar)}}
+{% endif %}
+{% endif %}
+{% if sex %}
+{% if sex != gt %}
+{{d_add(user,'gt',sex)}}
+{% endif %}
+{% endif %}
+
+
+
+{% endif %}
+
+
+<form method="post" action="">
+<div class="menu">
+<b>Thông tin cá nhân</b>
+<br />
+» Ảnh đại diện: 
+<br />
+<input type="text" name="avatar" value="{{avt}}">
+<br />
+» Giới tính:
+<br />
+<input type="radio" name="sex" value="boy" {% if gt == 'boy' %}checked="checked" {% endif %}/> Nam nhân<br />
+<input type="radio" name="sex" value="girl" {% if gt == 'girl' %}checked="checked" {% endif %}/> Nữ nhân
+
+
+{% set level = d_get('user_'~login,'level')|trim %}
+{% if level == 'admin' %}
+<br />
+» Tên hiển thị:
+<br/>
+<input type="text" name="nick" value="{{nck|default(nick)}}">
+{% endif %}
+</div>
+</div>
+<div class="menu">
+<b>Thay đổi mật khẩu</b>
+<br />
+Nhập mật khẩu cũ:
+<br />
+<input type="password" name="pass">
+<br />
+Nhập mật khẩu mới:
+<br />
+<input type="password" name="newpass">
+<br />
+Nhập lại mật khẩu mới:
+<br />
+<input type="password" name="repass">
+<br />
+
+<input type="submit" value="Lưu lại">
+</div>
+</form>

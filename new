@@ -1,0 +1,7 @@
+{% use 'giaodien.twig' %}
+{% use 'home.twig' %}
+{% set title='Blog chia sẻ' %}
+{{block('header')}}
+{{block('new_blog')}}
+{{block('category')}}
+{{block('footer')}}

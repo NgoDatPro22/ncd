@@ -1,0 +1,22 @@
+{% from 'function.twig' import slug %}
+{% from 'func.twig' import mi_get,get %}
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set domain = current_url|split('/').0~"//"~current_url|split('/').2 %}
+[
+{% for i in data %}
+{% set name = get('blog_'~i,'title') %}
+{% set id = get('blog_'~i,'id')|trim %}
+{% set category = get('blog_'~i,'category') %}
+{% set slug = get('blog_'~i,'slug') %}
+{% set cat = get('category_'~category,'ten') %}
+{% set content = get('blog_'~i,'content','raw') %}
+    {
+      "title"    : "{{name}}",
+      "url"      : "{{ domain }}/view/{{id}}-{{slug}}/",
+      "cat"      : "{{cat}}"
+    }{% if loop.last==false %} ,{% endif %}
+
+{% endfor %}
+]
+
+

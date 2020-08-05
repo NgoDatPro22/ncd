@@ -1,0 +1,9 @@
+{% use 'giaodien.twig' %}
+{% use 'home.twig' %}
+{{block('header')}}
+{{block('new_blog')}}
+
+{{block('new_comment')}}
+
+{{block('category')}}
+{{block('footer')}}

@@ -1,0 +1,45 @@
+{% use 'giaodien.twig' %}
+{% from 'func.twig' import d_get %}
+{% from 'function.twig' import login %}
+{% set login = login()|trim %}
+{{block('header')}}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and (level=='admin' or level=='mod') %}
+
+{% set url = get_uri_segments() %}
+{% if url[0] == 'manager' %}
+{% if url[1] == 'created-category' %}
+{% include 'manager_created-category' %}
+{% include 'manager_list-category' %}
+{% elseif url[1] == 'created-thread' %}
+{% include 'manager_created-thread' %}
+{% include 'manager_list-category' %}
+{% elseif url[1] == 'post' %}
+{% include 'manager_post' %}
+{% elseif url[1] == 'list' %}
+{% include 'manager_list' %}
+{% elseif url[1] == 'list_trung' %}
+{% include 'manager_list-trung' %}
+{% elseif url[1] == 'edit' %}
+{% include 'manager_edit' %}
+{% elseif url[1] == 'edit-chap' %}
+{% include 'manager_edit-chap' %}
+{% elseif url[1] == 'delete' %}
+{% include 'manager_delete' %}
+{% elseif url[1] == 'delete-chap' %}
+{% include 'manager_delete-chap' %}
+{% elseif url[1] == 'category-sort' %}
+{% include 'manager_category-sort' %}
+{% elseif url[1] == 'add-chap' %}
+{% include 'manager_add-chap' %}
+{% elseif url[1] == 'seo' %}
+{% include 'manager_seo' %}
+{% else %}
+{% include 'manager_home' %}
+{% endif %}
+{% endif %}
+{% else %}
+<script>window.location.href='/login'</script>
+{% endif %}
+{{block('footer')}}

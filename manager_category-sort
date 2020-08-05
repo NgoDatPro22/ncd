@@ -1,0 +1,46 @@
+{% from 'function.twig' import get,login %}
+{% from 'func.twig' import mi_get,mi_up,d_get %}
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+{% set login = login()|trim %}
+{% set user='user_'~login %}
+{% set level = d_get(user,'level') %}
+{% if login and level=='admin'  %}
+
+<div class="phdr"><b><i class="fa fa-bars"></i> Sắp xếp các chuyên mục</b></div>
+{% if data|length > 3 %}
+{% set act=get_get('id') %}
+{% set actt = get_get('idc') %}
+{% set idc = get('category_'~act,'idc') %}
+{% if act %}
+{% if get('category_'~act,'ten') == '' %}
+<div class="gmenu">Chuyên mục không tồn tại</div>
+{% else %}
+{{mi_up('list_category_'~idc,act)}}
+<div class="gmenu">Thành công</div>
+{% endif %}
+{% endif %}
+{% if actt %}
+{% if get('category_'~actt,'ten') == '' %}
+<div class="gmenu">Chuyên mục không tồn tại</div>
+{% else %}
+{{mi_up('list_category',actt)}}
+<div class="gmenu">Thành công</div>
+<script>window.location.href='/manager/category-sort'</script></div>
+{% endif %}
+{% endif %}
+<div class="card mt-3">
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set cmc = mi_get('list_category_'~idcmm) %}
+{% if loop.last==false %}
+<div class="list1"><a href="/manager/category-sort?idc={{idcmm}}"><i class="fa fa-chevron-circle-up" aria-hidden="true"></i></a> [ID: {{idcmm}}] {{cmm}}  </div>
+
+</div>
+{% endif %}
+{% endfor %}
+{% else %}
+<div class="list1">Chưa có chuyên mục nào</div>
+{% endif %}
+{% endif %}

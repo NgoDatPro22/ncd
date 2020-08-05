@@ -1,0 +1,137 @@
+{% block new_blog %}
+{% from 'function.twig' import time,slug,description,paging,login %}
+{% set login = login()|trim %}
+{% from 'func.twig' import mi_get,get %}
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set idfirst = mi_get('show_blog')|split(' @ ')|reverse[0]|trim %}
+
+<div class="phdr"><b><i class="fa fa-book" aria-hidden="true"></i> Bài viết mới</b> ({{data|length-1}}) {% if login %}<a data-no-instant href="/manager/post" style="float:right" title="Viết"><input type="submit" name="submit" value="Viết" /></a>{% endif %}</div>
+
+{% set per = '10' %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=url[1]|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+<div class="list1">Chưa có bài viết nào</div>
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set name = get('blog_'~i,'title') %}
+{% set id = get('blog_'~i,'id')|trim %}
+{% set category = get('blog_'~i,'category') %}
+{% set slug = get('blog_'~i,'slug') %}
+{% set cat = get('category_'~category,'ten') %}
+{% set catid = get('category_'~category,'id') %}
+{% set catslug = get('category_'~category,'slug') %}
+{% set time = get('blog_'~i,'time')|trim %}
+{% set view = get('blog_'~i,'view')|trim %}
+{% set content = get('blog_'~i,'content','raw') %}
+{% set mota = description(content) %}
+{% set thumb = get('blog_'~i,'thumb')|trim %}
+{% set cmt = get('blog_'~i,'comment_num')|trim %}
+
+
+<div class="list1">
+<span class="topic cat_{{ random (['red','blue','green','orange'])}}"><i class="fa fa-{{ random (['rocket','plane','bicycle','subway','train','motorcycle','bus','car'])}}"></i> {{cat}}</span>
+<a href="/view/{{id}}-{{slug}}/"> {{name}}</a>
+{% if login %}
+<a href="/manager/edit/{{id}}" style="float:right"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+{% endif %}
+</div>
+
+{% endfor %}
+{% endif %}
+</div>
+{{paging('new/',p,page_max)}}
+{% endblock %}
+
+{% block category %}
+{% from 'function.twig' import get,slug %}
+{% from 'func.twig' import mi_get %}
+{% set uri=get_uri_segments () %}
+{% set url=uri[1]|split('-')|first %}
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+<div class="phdr"><b><i class="fa fa-bars"></i> Chuyên mục</b></div>
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set slugcmm = get('category_'~i,'slug') %}
+
+{% if loop.last==false %}
+
+<div class="list1"><a href="/category/{{idcmm}}-{{slugcmm}}/"><i class="fa fa-cube" aria-hidden="true"></i> {{cmm}}</a> ({{mi_get('show_category_'~i)|split(' @ ')|length-1}})</div>
+
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block view_more %}
+{% from 'function.twig' import get,time,description,del %}
+{% set data = get('top_view')|json_decode %}
+
+<div class="phdr">Xem Nhiều</div>
+
+{% if data %}
+{% for k,v in data|sort|reverse %}
+{% set id = get(k,'id') %}
+{% set slug = get(k,'slug') %}
+{% set title = get(k,'title') %}
+{% if loop.index > '5' %}
+{% set go = del('top_view',k) %}
+{% endif %}
+<div class="list1"><a href="/view/{{id}}-{{slug}}/" title="{{title}}">{{title}}</a> <span class="gray"><small>{{v}} lượt xem</small></span></div> 
+
+{% endfor %}
+{% else %}
+<div class="list1">Chưa có bài viết nào</div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block new_comment %}
+{% from 'function.twig' import time,del,login %}
+{% from 'func.twig' import get %}
+
+{% set login = login()|trim %}
+{% if login %}
+{% set data = get_data('comment')|last.data|json_decode %}
+
+<div class="phdr" id="kcmt"><b><i class="fa fa-comments-o" aria-hidden="true"></i> Bình luận mới</b></div>
+
+{% if data %}
+{% set comment={} %}
+{% for key,value in data %}
+{% set id = value %}
+{% set key = key|slice(1,last) %}
+{% set comment=comment|merge( get_data(id)|last.data|json_decode ) %}
+{% endfor %}
+{% for k,v in comment|sort|reverse|slice(0,7) %}
+{% set cmt = k|json_decode %}
+{% set title = get('blog_'~cmt['id'],'title') %}
+{% if title == '' %}
+{del('comment','C'~v)}}
+{% endif %}
+<div class="list1"><b>❖ {{cmt['name']}}:</b> {{cmt['comment']}}</a> <small><i class="fa fa-clock-o" aria-hidden="true"></i> {{time(cmt['time'])}} </small>
+<a href="/view/{{cmt['id']}}#cmt" style="float:right" ><i class="fa fa-cogs" aria-hidden="true"></i></a>
+</div>
+{% endfor %}
+{% else %}
+<div class="list1">Chưa có bình luận nào</div>
+{% endif %}
+</div>
+
+{% endif %}
+{% endblock %}
+
